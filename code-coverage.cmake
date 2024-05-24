@@ -534,16 +534,27 @@ endfunction()
 # ~~~
 # Optional:
 # EXCLUDE <PATTERNS> - Excludes files of the patterns provided from coverage. Note that GCC/lcov excludes by glob pattern, and clang/LLVM excludes via regex!
+# BRANCHES - Show branch coverage information in the report.
+# EXPANSIONS - LLVM only: show all macro expansions (this will be ignored if using GNU).
 # ~~~
 function(add_code_coverage_all_targets)
   # Argument parsing
   set(multi_value_keywords EXCLUDE)
+  set(options BRANCHES EXPANSIONS)
   cmake_parse_arguments(add_code_coverage_all_targets "" ""
-                        "${multi_value_keywords}" ${ARGN})
+                        "${options}" "${multi_value_keywords}" ${ARGN})
 
   if(CODE_COVERAGE)
     if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang"
        OR CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
+
+      if(add_code_coverage_all_targets_BRANCHES)
+        set(SHOW_BRANCHES "--show-branches=count")
+      endif()
+      
+      if(add_code_coverage_all_targets_EXPANSIONS)
+        set(SHOW_EXPANSIONS "--show-expansions")
+      endif()
 
       # Merge the profile data for all of the run executables
       if(WIN32)
@@ -634,7 +645,7 @@ function(add_code_coverage_all_targets)
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list\; llvm-cov.exe show
             $$FILELIST
             -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
-            -show-line-counts-or-regions
+            -show-line-counts-or-regions ${SHOW_BRANCHES} ${SHOW_EXPANSIONS}
             -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
             -format="html" ${EXCLUDE_REGEX}
           DEPENDS ccov-all-processing)
@@ -645,7 +656,7 @@ function(add_code_coverage_all_targets)
             ${LLVM_COV_PATH} show `cat
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
             -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
-            -show-line-counts-or-regions
+            -show-line-counts-or-regions ${SHOW_BRANCHES} ${SHOW_EXPANSIONS}
             -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
             -format="html" ${EXCLUDE_REGEX}
           DEPENDS ccov-all-processing)
@@ -653,6 +664,10 @@ function(add_code_coverage_all_targets)
 
     elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                                 "GNU")
+      if(add_code_coverage_all_targets_BRANCHES)
+        set(SHOW_BRANCHES "-b -c")
+      endif()
+
       set(COVERAGE_INFO "${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.info")
 
       # Nothing required for gcov
@@ -695,7 +710,7 @@ function(add_code_coverage_all_targets)
       add_custom_target(
         ccov-all
         COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
-                ${COVERAGE_INFO} -p ${CMAKE_SOURCE_DIR}
+                ${COVERAGE_INFO} -p ${CMAKE_SOURCE_DIR} ${SHOW_BRANCHES}
         DEPENDS ccov-all-capture)
 
     endif()
