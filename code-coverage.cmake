@@ -541,8 +541,8 @@ function(add_code_coverage_all_targets)
   # Argument parsing
   set(multi_value_keywords EXCLUDE)
   set(options BRANCHES EXPANSIONS)
-  cmake_parse_arguments(add_code_coverage_all_targets "" ""
-                        "${options}" "${multi_value_keywords}" ${ARGN})
+  cmake_parse_arguments(add_code_coverage_all_targets "${options}" ""
+                         "${multi_value_keywords}" ${ARGN})
 
   if(CODE_COVERAGE)
     if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang"
