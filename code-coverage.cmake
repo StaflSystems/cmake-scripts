@@ -647,6 +647,7 @@ function(add_code_coverage_all_targets)
             -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
             -show-line-counts-or-regions ${SHOW_BRANCHES} ${SHOW_EXPANSIONS}
             -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
+            -Xdemangler c++filt -Xdemangler -n
             -format="html" ${EXCLUDE_REGEX}
           DEPENDS ccov-all-processing)
       else()
@@ -658,6 +659,7 @@ function(add_code_coverage_all_targets)
             -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
             -show-line-counts-or-regions ${SHOW_BRANCHES} ${SHOW_EXPANSIONS}
             -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
+            -Xdemangler c++filt -Xdemangler -n
             -format="html" ${EXCLUDE_REGEX}
           DEPENDS ccov-all-processing)
       endif()
